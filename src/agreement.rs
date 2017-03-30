@@ -189,7 +189,6 @@ pub fn agree_ephemeral<F, R, E>(my_private_key: EphemeralPrivateKey,
                                 peer_public_key: untrusted::Input,
                                 error_value: E, kdf: F) -> Result<R, E>
                                 where F: FnOnce(&[u8]) -> Result<R, E> {
-    println!("1");
     // NSA Guide Prerequisite 1.
     //
     // The domain parameters are hard-coded. This check verifies that the
@@ -198,10 +197,8 @@ pub fn agree_ephemeral<F, R, E>(my_private_key: EphemeralPrivateKey,
     if peer_public_key_alg.i.curve.id != my_private_key.alg.i.curve.id {
         return Err(error_value);
     }
-    println!("2");
 
     let alg = &my_private_key.alg.i;
-    println!("3");
 
     // NSA Guide Prerequisite 2, regarding which KDFs are allowed, is delegated
     // to the caller.
@@ -214,18 +211,15 @@ pub fn agree_ephemeral<F, R, E>(my_private_key: EphemeralPrivateKey,
     // `EphemeralPrivateKey::compute_public_key()`.
 
     let mut shared_key = [0u8; ec::ELEM_MAX_BYTES];
-    println!("4");
     let shared_key =
         &mut shared_key[..alg.curve.elem_and_scalar_len];
-    println!("5");
 
     // NSA Guide Steps 2, 3, and 4.
     //
     // We have a pretty liberal interpretation of the NIST's spec's "Destroy"
     // that doesn't meet the NSA requirement to "zeroize."
-    try!((alg.ecdh)(shared_key, &my_private_key.private_key, peer_public_key)
-            .map_err(|_| error_value));
-    println!("6");
+
+    ((alg.ecdh)(shared_key, &my_private_key.private_key, peer_public_key)).unwrap();
 
     // NSA Guide Steps 5 and 6.
     //
